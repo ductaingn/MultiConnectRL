@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 def full_budget_power(num_send_packet: np.ndarray) -> np.ndarray:
     """
     Share the whole power budget uniformly among the devices (1/K each) and, within a device,
-    among its active interfaces. Same split as SACPF (SACRA-Va).
+    among its active interfaces. Same split as SACRA-Va.
     Returns the power share of each link, shape (num_devices, 2).
     """
     num_devices = num_send_packet.shape[0]

@@ -24,7 +24,7 @@ class RAQL(Algorithm):
     low_level_algorithm: LLRAQL
     learns_online = True  # Algorithm 1 of Dinh et al.: one update per frame on the current transition
     # False: every active link gets P_sum / (N + M) as in the original RAQL paper.
-    # True: the whole budget is used, split like SACPF (fairer power comparison).
+    # True: the whole budget is used, split like SACRA-Va (fairer power comparison).
     full_power_budget: bool = attrs.field(default=False, kw_only=True)
     reward_fn: CumulativeQoSReward = attrs.field(
         init=False, factory=CumulativeQoSReward

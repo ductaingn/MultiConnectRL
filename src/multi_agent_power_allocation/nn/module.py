@@ -42,7 +42,7 @@ class BackBone(nn.Module):
         return out
 
 
-class SACPAACtor(nn.Module):
+class SACRAActor(nn.Module):
     def __init__(
         self,
         observation_space: Space,
@@ -96,7 +96,7 @@ class SACPAACtor(nn.Module):
         return logits
 
 
-class SACPACritic(nn.Module):
+class SACRACritic(nn.Module):
     def __init__(
         self,
         observation_space: Space,

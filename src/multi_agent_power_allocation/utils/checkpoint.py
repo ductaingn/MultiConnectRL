@@ -14,6 +14,10 @@ import numpy as np
 import torch
 import yaml
 
+from multi_agent_power_allocation.algorithms.algorithm_register import (
+    algorithm_name,
+    parse_algorithm_name,
+)
 from multi_agent_power_allocation.algorithms.high_level import Algorithm
 
 DEFAULT_CHECKPOINT_CONFIG: Dict[str, Any] = {
@@ -62,7 +66,7 @@ def save_policies(
     for agent_id, policy in policies.items():
         torch.save(
             {
-                "algorithm": type(policy).__name__,
+                "algorithm": algorithm_name(policy),
                 "low_level_algorithm": type(policy.low_level_algorithm).__name__,
                 "state_dict": policy.low_level_algorithm.state_dict(),
             },
@@ -85,10 +89,12 @@ def load_policies(path: str, policies: Dict[str, Algorithm]) -> Dict[str, Any]:
             map_location="cpu",
             weights_only=False,
         )
-        if checkpoint["algorithm"] != type(policy).__name__:
+        # Compare the algorithms (accepts former names such as SACPA)
+        saved, _ = parse_algorithm_name(checkpoint["algorithm"])
+        if saved.value is not type(policy):
             raise ValueError(
                 f"Agent {agent_id}: checkpoint holds {checkpoint['algorithm']}, "
-                f"but the policy is {type(policy).__name__}"
+                f"but the policy is {algorithm_name(policy)}"
             )
         policy.low_level_algorithm.load_state_dict(checkpoint["state_dict"])
 

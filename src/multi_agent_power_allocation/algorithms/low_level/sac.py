@@ -14,16 +14,16 @@ from multi_agent_power_allocation.algorithms.low_level.low_level_algorithm impor
 from multi_agent_power_allocation.algorithms.low_level.utils.replay_buffer import (
     ReplayBufferSamples,
 )
-from multi_agent_power_allocation.nn.module import SACPAACtor, SACPACritic
+from multi_agent_power_allocation.nn.module import SACRAActor, SACRACritic
 
 
 @attrs.define
 class SAC(LowLevelAlgorithm):
-    actor: SACPAACtor
+    actor: SACRAActor
     actor_optim: optim.Optimizer
-    critic: SACPACritic
+    critic: SACRACritic
     critic_optim: optim.Optimizer
-    critic2: SACPACritic
+    critic2: SACRACritic
     critic2_optim: optim.Optimizer
     target_entropy: float
     log_alpha: torch.Tensor
@@ -31,8 +31,8 @@ class SAC(LowLevelAlgorithm):
     gradient_steps: int = 1
     gamma: float = 0.99
     tau: float = 0.005
-    critic_target: SACPACritic = attrs.field(init=False)
-    critic2_target: SACPACritic = attrs.field(init=False)
+    critic_target: SACRACritic = attrs.field(init=False)
+    critic2_target: SACRACritic = attrs.field(init=False)
 
     @critic_target.default
     def _critic_target_factory(self):
@@ -89,7 +89,7 @@ class SAC(LowLevelAlgorithm):
         self,
         data: ReplayBufferSamples,
         alpha: torch.Tensor,
-        critic: SACPACritic,
+        critic: SACRACritic,
         optimizer: optim.Optimizer,
     ):
         with torch.no_grad():
