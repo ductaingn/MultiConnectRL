@@ -2,7 +2,7 @@ import json
 import os
 import pickle
 from copy import deepcopy
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import attrs
 import numpy as np
@@ -11,7 +11,10 @@ import yaml
 from torch.optim import Adam
 
 # from torch.optim.lr_scheduler import CosineAnnealingLR
-from multi_agent_power_allocation.algorithms.algorithm_register import Algorithms
+from multi_agent_power_allocation.algorithms.algorithm_register import (
+    Algorithms,
+    parse_algorithm_name,
+)
 from multi_agent_power_allocation.algorithms.high_level import Algorithm
 from multi_agent_power_allocation.algorithms.low_level import (
     DQN,
@@ -20,13 +23,13 @@ from multi_agent_power_allocation.algorithms.low_level import (
     Random,
 )
 from multi_agent_power_allocation.data import scenario_dir
-from multi_agent_power_allocation.nn.module import DQNQNetwork, SACPAACtor, SACPACritic
+from multi_agent_power_allocation.nn.module import DQNQNetwork, SACRAActor, SACRACritic
 
 
 def load_config(config_file_path: str, overrides: List[str] | None = None) -> Dict:
     """
     Load a YAML config and apply `dotted.key=value` overrides, e.g.
-    `env_config.seed=3` or `env_config.algorithm_list=[SACPA,SACPA,SACPA,SACPA]`.
+    `env_config.seed=3` or `env_config.algorithm_list=[SACRA,SACRA,SACRA,SACRA]`.
     Values are parsed as YAML so numbers, booleans, lists and null work as expected.
     """
     with open(config_file_path, "rb") as file:
@@ -155,18 +158,9 @@ class TrainConfig:
                 Algorithm list: {algorithm_list}
                 """
             )
-        parsed_algorithms_class: List[Algorithms] = []
-        for algorithm in algorithm_list:
-            parsed_algo = None
-            for registered_algo in Algorithms:
-                if registered_algo.value.__name__ == algorithm:
-                    parsed_algo = registered_algo
-                    parsed_algorithms_class.append(parsed_algo)
-            if parsed_algo is None:
-                raise ValueError(
-                    f"Algorithm {algorithm} is not registered, valid ones: {[a.value for a in Algorithms]}"
-                )
-        env_config.update({"algorithm_list": parsed_algorithms_class})
+        # (algorithm, full power budget) per agent, from the paper names (`RAQL-FP`, ...)
+        parsed_algorithms = [parse_algorithm_name(name) for name in algorithm_list]
+        env_config.update({"algorithm_list": parsed_algorithms})
 
         self.model_config = model_config
         self.num_env = config.get("num_env")
@@ -184,11 +178,12 @@ class TrainConfig:
         self.env_config = env_config
 
     def get_algorithm_mapping(self, env_config: Dict) -> Dict[str, Algorithm]:
-        list_algorithm_cls: List[Algorithms] = env_config["algorithm_list"]
+        list_algorithm_cls: List[Tuple[Algorithms, bool]] = env_config["algorithm_list"]
         algorithm_mapping = {}
         # schedulers = []
 
-        for agent_id, algorithm_cls in enumerate(list_algorithm_cls):
+        for agent_id, (algorithm_cls, full_power) in enumerate(list_algorithm_cls):
+            full_power_budget = self.baseline_full_power or full_power
             obs_space = algorithm_cls.value.observation_space(
                 env_config["wc_clusters_configs"][agent_id]["num_devices"],
                 env_config["wc_clusters_configs"][agent_id]["L_max"],
@@ -199,22 +194,25 @@ class TrainConfig:
             if self.seed is not None:
                 action_space.seed(self.seed + agent_id)
 
-            if algorithm_cls == Algorithms.SACPA or algorithm_cls == Algorithms.SACPF:
-                actor = SACPAACtor(
+            if (
+                algorithm_cls == Algorithms.SACRA
+                or algorithm_cls == Algorithms.SACRA_VA
+            ):
+                actor = SACRAActor(
                     observation_space=obs_space,
                     action_space=action_space,
                     **self.model_config,
                     device=self.device,
                 )
                 actor_optim = Adam(actor.parameters(), lr=self.SAC_config["lr"])
-                critic1 = SACPACritic(
+                critic1 = SACRACritic(
                     observation_space=obs_space,
                     action_space=action_space,
                     **self.model_config,
                     device=self.device,
                 )
                 critic1_optim = Adam(critic1.parameters(), lr=self.SAC_config["lr"])
-                critic2 = SACPACritic(
+                critic2 = SACRACritic(
                     observation_space=obs_space,
                     action_space=action_space,
                     **self.model_config,
@@ -262,7 +260,7 @@ class TrainConfig:
                     rng = None
                 policy = algorithm_cls.value(
                     RAQL(action_space, rng=rng),
-                    full_power_budget=self.baseline_full_power,
+                    full_power_budget=full_power_budget,
                 )
             elif algorithm_cls == Algorithms.RANDOM:
                 policy = algorithm_cls.value(Random(action_space))
@@ -274,7 +272,7 @@ class TrainConfig:
 
                 policy = algorithm_cls.value(
                     DQN(q_net, q_net_optim, action_space),
-                    full_power_budget=self.baseline_full_power,
+                    full_power_budget=full_power_budget,
                 )
             else:
                 raise NotImplementedError

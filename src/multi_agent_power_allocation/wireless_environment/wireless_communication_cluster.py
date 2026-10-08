@@ -834,8 +834,8 @@ class WirelessCommunicationCluster:
                 num_packets = np.minimum(average_rate * self.T / self.D, self.L_max)
             l_max_estimate = np.floor(num_packets)
         elif (
-            isinstance(algorithm, Algorithms.SACPA.value)
-            or isinstance(algorithm, Algorithms.SACPF.value)
+            isinstance(algorithm, Algorithms.SACRA.value)
+            or isinstance(algorithm, Algorithms.SACRA_VA.value)
             or isinstance(algorithm, Algorithms.RANDOM.value)
         ):
             packet_successful_rate = np.ones(

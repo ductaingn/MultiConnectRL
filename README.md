@@ -11,15 +11,16 @@ access points (APs) only observe ACK/NACK feedback. It provides
 - channel scenarios ([`ductaingn/multi-connect-rl-scenarios`](https://huggingface.co/datasets/ductaingn/multi-connect-rl-scenarios))
   and trained checkpoints ([`ductaingn/multi-connect-rl-checkpoints`](https://huggingface.co/ductaingn/multi-connect-rl-checkpoints)).
 
-Algorithms (`env_config.algorithm_list`, one per AP): `SACPA` (SACRA), `SACPF` (SACRA without power
-control, "SACRA-Va"), `RAQL`, `DQN`, `Random`.
+Algorithms (`env_config.algorithm_list`, one per AP, names as in the paper): `SACRA`, `SACRA-Va`
+(SACRA without power control), `RAQL`, `DQN`, their full-power-budget variants `RAQL-FP` and
+`DQN-FP`, and `Random`.
 
 ## Training
 
 ```bash
 poetry install
 python -m multi_agent_power_allocation.run.train -rn "my run" -s 1 \
-  -o "env_config.algorithm_list=[SACPA,SACPA,SACPA,SACPA]" \
+  -o "env_config.algorithm_list=[SACRA,SACRA,SACRA,SACRA]" \
   -o env_config.dynamic_obstacles=true
 ```
 
@@ -28,7 +29,8 @@ python -m multi_agent_power_allocation.run.train -rn "my run" -s 1 \
 - `-o key.subkey=value` overrides any config entry; values are parsed as YAML (repeatable)
 
 `env_config.wc_cluster_config.P_sum` is the power budget per AP in dBm. `env_config.baseline_full_power: true`
-makes RAQL/DQN use the whole budget (split like SACPF) instead of `P_sum / (N + M)` per link.
+makes all RAQL/DQN agents use the whole budget (split like SACRA-Va) instead of `P_sum / (N + M)` per link,
+like the `RAQL-FP` and `DQN-FP` names do for a single agent. The former names `SACPA` and `SACPF` are still accepted.
 
 ## Checkpoints and Hugging Face Hub
 

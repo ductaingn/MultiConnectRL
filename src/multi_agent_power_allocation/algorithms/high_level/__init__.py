@@ -6,7 +6,7 @@ from .dqn import DQN
 from .high_level_algorithm import Algorithm, Reward
 from .random import Random
 from .raql import RAQL
-from .sacpa import SACPA
-from .sacpf import SACPF
+from .sacra import SACRA
+from .sacra_va import SACRAVa
 
-__all__ = ["Reward", "Algorithm", "DQN", "Random", "RAQL", "SACPA", "SACPF"]
+__all__ = ["Reward", "Algorithm", "DQN", "Random", "RAQL", "SACRA", "SACRAVa"]

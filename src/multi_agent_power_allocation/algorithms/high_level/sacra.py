@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 @attrs.define
-class SACPA(Algorithm):
+class SACRA(Algorithm):
     low_level_algorithm: SAC
 
     @classmethod

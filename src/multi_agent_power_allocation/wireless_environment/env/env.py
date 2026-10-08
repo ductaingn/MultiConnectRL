@@ -254,7 +254,7 @@ class WirelessEnvironment(ParallelEnv):
     def estimate_CGINR(self):
         for agent in self.agents:
             algorithm = self.algorithm_mapping[agent]
-            if isinstance(algorithm, Algorithms.SACPA.value):
+            if isinstance(algorithm, Algorithms.SACRA.value):
                 self.wc_clusters[agent].estimate_CGINR()
 
     def step(self, actions: torch.Tensor | np.ndarray):
