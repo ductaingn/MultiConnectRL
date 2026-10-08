@@ -1,7 +1,15 @@
-# Multi-Agent Power Allocation
+# MultiConnectRL
 
-Multi-agent DRL for joint interface selection, packet allocation and power control in integrated
-Sub-6GHz/mmWave networks. Each AP is an agent of a PettingZoo `ParallelEnv`.
+A framework for multi-agent reinforcement learning on multi-connectivity networks: joint interface
+selection, packet allocation and power control in integrated Sub-6GHz/mmWave networks where the
+access points (APs) only observe ACK/NACK feedback. It provides
+
+- a multi-agent simulator (PettingZoo `ParallelEnv`, one agent per AP) with blockage and
+  inter-cell interference,
+- learning algorithms and baselines,
+- training, checkpointing and logging infrastructure,
+- channel scenarios ([`ductaingn/multi-connect-rl-scenarios`](https://huggingface.co/datasets/ductaingn/multi-connect-rl-scenarios))
+  and trained checkpoints ([`ductaingn/multi-connect-rl-checkpoints`](https://huggingface.co/ductaingn/multi-connect-rl-checkpoints)).
 
 Algorithms (`env_config.algorithm_list`, one per AP): `SACPA` (SACRA), `SACPF` (SACRA without power
 control, "SACRA-Va"), `RAQL`, `DQN`, `Random`.
@@ -35,7 +43,7 @@ Configured by `checkpoint_config` (defaults in `utils/checkpoint.py`):
 | `save_best` | `true` | `best/`: highest mean reward over the last `save_freq` steps |
 | `upload_to_wandb` | `false` | log the run folder as a WandB model artifact |
 | `push_to_hub` | `false` | push the run folder to the Hugging Face Hub at the end |
-| `hf_repo_id` | `null` | e.g. `user/sacra-power-allocation` (required with `push_to_hub`) |
+| `hf_repo_id` | `null` | e.g. `user/multi-connect-rl-checkpoints` (required with `push_to_hub`) |
 | `hf_private` | `true` | |
 | `hf_push_every_save` | `false` | also push each periodic checkpoint |
 | `hf_token_env` | `HF_TOKEN` | env var holding the token (else the `huggingface-cli login` cache) |
@@ -45,7 +53,7 @@ Pushing requires `pip install huggingface_hub`.
 
 ```bash
 HF_TOKEN=hf_... python -m multi_agent_power_allocation.run.train -rn "sacra 3 devices" \
-  -o checkpoint_config.push_to_hub=true -o checkpoint_config.hf_repo_id=<user>/sacra-power-allocation
+  -o checkpoint_config.push_to_hub=true -o checkpoint_config.hf_repo_id=<user>/multi-connect-rl-checkpoints
 ```
 
 Restoring policies (e.g. for evaluation):
@@ -60,6 +68,11 @@ config = TrainConfig(config_dict=yaml.safe_load(open(f"{run_dir}/config.yaml")))
 policies = config.env_config["algorithm_mapping"]
 load_policies(f"{run_dir}/final", policies)
 ```
+
+The trained policies of the SACRA paper (SACRA, SACRA-Va, RAQL and RAQL-FP; 3 and 10 devices per
+AP; static and dynamic blockage; 3 seeds) are on
+[`ductaingn/multi-connect-rl-checkpoints`](https://huggingface.co/ductaingn/multi-connect-rl-checkpoints),
+in the same layout (`<run>/config.yaml`, `<run>/final/`).
 
 ## Channel data
 
@@ -89,7 +102,12 @@ from multi_agent_power_allocation.wireless_environment.wireless_communication_cl
 )
 
 WirelessCommunicationCluster.generate_data(
-    scenario_name="my_scenario", num_cluster=4, num_timestep=30000,
-    num_device=3, num_subchannel=4, num_beam=4, seed=1,
+    scenario_name="my_scenario",
+    num_cluster=4,
+    num_timestep=30000,
+    num_device=3,
+    num_subchannel=4,
+    num_beam=4,
+    seed=1,
 )
 ```

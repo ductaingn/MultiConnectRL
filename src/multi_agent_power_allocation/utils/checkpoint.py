@@ -30,7 +30,7 @@ DEFAULT_CHECKPOINT_CONFIG: Dict[str, Any] = {
     "upload_to_wandb": False,
     # Push the final checkpoint folder to the Hugging Face Hub
     "push_to_hub": False,
-    "hf_repo_id": None,  # e.g. "<user>/sacra-power-allocation"
+    "hf_repo_id": None,  # e.g. "<user>/multi-connect-rl-checkpoints"
     "hf_private": True,
     # Also push every periodic checkpoint (useful on preemptible machines such as Kaggle)
     "hf_push_every_save": False,
