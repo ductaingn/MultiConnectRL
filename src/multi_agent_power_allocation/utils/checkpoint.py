@@ -78,8 +78,12 @@ def load_policies(path: str, policies: Dict[str, Algorithm]) -> Dict[str, Any]:
     Returns the checkpoint metadata.
     """
     for agent_id, policy in policies.items():
+        # Load on the CPU: `load_state_dict` then copies the tensors to the device of the
+        # policy, so checkpoints saved on a GPU also load on CPU-only machines
         checkpoint = torch.load(
-            os.path.join(path, f"agent_{agent_id}.pt"), weights_only=False
+            os.path.join(path, f"agent_{agent_id}.pt"),
+            map_location="cpu",
+            weights_only=False,
         )
         if checkpoint["algorithm"] != type(policy).__name__:
             raise ValueError(
