@@ -8,8 +8,8 @@ access points (APs) only observe ACK/NACK feedback. It provides
   inter-cell interference,
 - learning algorithms and baselines,
 - training, checkpointing and logging infrastructure,
-- channel scenarios ([`ductaingn/multi-connect-rl-scenarios`](https://huggingface.co/datasets/ductaingn/multi-connect-rl-scenarios))
-  and trained checkpoints ([`ductaingn/multi-connect-rl-checkpoints`](https://huggingface.co/ductaingn/multi-connect-rl-checkpoints)).
+- channel scenarios ([`multi-connect-rl-scenarios`](https://anonymous-hf.com/a/jm4dnb3tjkul))
+  and trained checkpoints ([`multi-connect-rl-checkpoints`](https://anonymous-hf.com/a/iq1lf2uuk9s0)).
 
 Algorithms (`env_config.algorithm_list`, one per AP, names as in the paper): `SACRA`, `SACRA-Va`
 (SACRA without power control), `RAQL`, `DQN`, their full-power-budget variants `RAQL-FP` and
